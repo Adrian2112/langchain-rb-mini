@@ -23,7 +23,7 @@ class ChatbotApp
   end
 
   def generate_response(prompt)
-    @language_model.generate_response(prompt)
+    language_model.generate_response(prompt)
   end
 
   def parse_action(response)
@@ -32,7 +32,7 @@ class ChatbotApp
   end
 
   def perform_action(action, action_input)
-    tool = @tools.find { |t| t.name == action }
+    tool = tools.find { |t| t.name == action }
     tool.execute(action_input)
   end
 end
