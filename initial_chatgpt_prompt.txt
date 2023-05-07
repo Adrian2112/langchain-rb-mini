@@ -1,0 +1,39 @@
+I want to write a chatgpt like app where you can ask things and it will run a local LLM (large language model) and try to answer the question using varios tools.
+Search, Calculator etc.
+
+The LLM will take a base prompt like this
+"Answer the following questions as best you can. You have access to the following tools:
+
+search: a search engine. useful for when you need to answer questions about current
+        events. input should be a search query.
+calculator: useful for getting the result of a math expression. The input to this
+            tool should be a valid mathematical expression that could be executed
+            by a simple calculator.
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [search, calculator]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!
+
+Question: ${question}
+Thought:
+"
+
+That should be read from a file and interpolate the question.
+the code will ask the LLM to generate a response, parse the action and action input. Run the action with the inputs. The result will be the observation.
+If the result is the final answer it will print it, otherwise it will update the prompt to include this new observation and provide that new prompt to the LLM.
+This will run in a loop until the answer is found.
+
+I want to write this code in ruby.
+I want to be able to define multiple tools that can be added to the base prompt. Currently only search and calculator works but the code make it easy to add new tools.
+The LLM also should be abstracted away so we can swap multiple ways of running an LLM (chatgpt via API, local LLMs, etc). We will start with an LLM that is local but should be able to be swapped.
+Let start with defining the main classes that we are going to use.
+
