@@ -1,0 +1,1 @@
+ruby main.rb -m ../models/koala-13B-4bit-128g.GGML.bin -r 5 "What is the capital of France?"
