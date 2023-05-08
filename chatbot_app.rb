@@ -45,12 +45,12 @@ class ChatbotApp
         next
       end
 
-      logger.debug("performing action: #{action} with input: #{action_input}".magenta)
+      logger.debug("performing action: #{action} with input: #{action_input}".green)
       observation = perform_action(action, action_input)
 
       logger.info("Observation: #{observation}".blue)
 
-      prompt = "Thought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
+      prompt += "\nThought: #{thought}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
 
       run_count += 1
     end
@@ -82,7 +82,7 @@ class ChatbotApp
       [](1)&.
       strip&.
       downcase&.
-      then { |action| tools.map(&:name).find { |tool_name| tool_name == action } }
+      then { |action| tools.map(&:name).find { |tool_name| action.include?(tool_name) } }
   end
 
   def get_action_input(response)

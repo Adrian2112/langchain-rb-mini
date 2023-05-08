@@ -44,4 +44,4 @@ question = ARGV[0]
 final_answer = chatbot.run(question, max_runs: options[:max_runs] || 10)
 
 # Display the final answer
-puts "Final Answer: #{final_answer}"
+puts final_answer

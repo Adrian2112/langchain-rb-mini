@@ -71,6 +71,14 @@ RSpec.describe ChatbotApp do
 
       expect(action).to eq('search')
     end
+
+    it 'with action and input in one line' do
+      response = 'Answer: Paris. Thought: Use the search tool to find an answer to the question "What is the capital of France?" Action: search the web Action Input: "What is the capital of France?"'
+
+      action = chatbot.get_action(response)
+
+      expect(action).to eq('search')
+    end
   end
 
   describe '#get_action_input' do
@@ -135,6 +143,4 @@ RSpec.describe ChatbotApp do
       end
     end
   end
-
 end
-
