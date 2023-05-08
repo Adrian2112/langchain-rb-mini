@@ -22,6 +22,9 @@ class ChatbotApp
 
     run_count = 0
     while run_count < max_runs
+      logger.debug('='.magenta * 80)
+      logger.debug(prompt.magenta)
+      logger.debug('='.magenta * 80)
       response = generate_response(prompt)
 
       logger.info(response.yellow)
@@ -37,7 +40,7 @@ class ChatbotApp
       action_input = get_action_input(response)
 
       unless action && action_input
-        logger.debug("no action found".magenta)
+        logger.debug("no action found".red)
         run_count += 1
         next
       end
@@ -95,11 +98,11 @@ class ChatbotApp
       if result
         result
       else
-        logger.error("Failed to execute action: #{action}")
+        logger.error("Failed to execute action: #{action}".red)
         nil
       end
     else
-      logger.error("Invalid action: #{action}")
+      logger.error("Invalid action: #{action}".red)
       nil
     end
   end
