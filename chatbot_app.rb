@@ -9,10 +9,11 @@ class ChatbotApp
     @tools = tools
     @language_model = language_model
     @logger = ChatbotLogger.new
+    @base_prompt = File.open("base_prompt.txt").read
   end
 
   def run(question)
-    prompt = "Question: #{question}"
+    prompt = "#{@base_prompt}\nQuestion: #{question}"
     final_answer = nil
 
     logger.info(prompt.cyan)
