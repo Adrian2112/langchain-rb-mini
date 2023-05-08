@@ -9,5 +9,6 @@ gem 'rspec'
 gem 'guard'
 gem 'guard-rspec'
 gem 'webmock'
+gem 'llama_cpp'
 # Add any additional gems you need for your project
 # gem 'example-gem'
