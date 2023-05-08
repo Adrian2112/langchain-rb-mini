@@ -9,7 +9,7 @@ class Search < ToolBase
     super(name)
     @api_key = api_key
     @cache_file = cache_file
-    @query_cache = {}
+    @query_cache = load_cache
   end
 
   def execute(input)
