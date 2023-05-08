@@ -3,15 +3,13 @@ require 'rspec/mocks'
 require_relative '../chatbot_app'
 
 RSpec.describe ChatbotApp do
-  let(:search_tool) { double('SearchTool') }
-  let(:calculator_tool) { double('CalculatorTool') }
+  let(:search) { double('SearchTool') }
   let(:local_language_model) { double('LocalLanguageModel') }
 
-  subject(:chatbot) { ChatbotApp.new([search_tool, calculator_tool], local_language_model) }
+  subject(:chatbot) { ChatbotApp.new([search], local_language_model) }
 
   before do
-    allow(search_tool).to receive(:name).and_return('search')
-    allow(calculator_tool).to receive(:name).and_return('calculator')
+    allow(search).to receive(:name).and_return('search')
   end
 
   describe '#run' do
@@ -22,7 +20,7 @@ RSpec.describe ChatbotApp do
 
     it 'runs the main loop and finds the final answer' do
       expect(local_language_model).to receive(:generate_response).and_return(response1, response2)
-      expect(search_tool).to receive(:execute).with('capital of France').and_return(observation1)
+      expect(search).to receive(:execute).with('capital of France').and_return(observation1)
 
       final_answer = chatbot.run(question)
       expect(final_answer).to eq("Paris is the capital of France.")
@@ -65,19 +63,19 @@ RSpec.describe ChatbotApp do
   end
 
   describe '#perform_action' do
-    let(:search_tool) { double('SearchTool') }
+    let(:search) { double('SearchTool') }
     let(:action) { 'search' }
     let(:action_input) { 'capital of France' }
     let(:observation) { 'Paris is the capital of France.' }
 
     before do
-      allow(search_tool).to receive(:name).and_return('search')
+      allow(search).to receive(:name).and_return('search')
     end
 
     context 'when the action is valid' do
       before do
-        allow(chatbot).to receive(:tools).and_return([search_tool])
-        allow(search_tool).to receive(:execute).with(action_input).and_return(observation)
+        allow(chatbot).to receive(:tools).and_return([search])
+        allow(search).to receive(:execute).with(action_input).and_return(observation)
       end
 
       it 'executes the action and returns the observation' do
@@ -97,8 +95,8 @@ RSpec.describe ChatbotApp do
 
     context 'when the action execution fails' do
       before do
-        allow(chatbot).to receive(:tools).and_return([search_tool])
-        allow(search_tool).to receive(:execute).with(action_input).and_return(nil)
+        allow(chatbot).to receive(:tools).and_return([search])
+        allow(search).to receive(:execute).with(action_input).and_return(nil)
       end
 
       it 'logs an error and returns nil' do
