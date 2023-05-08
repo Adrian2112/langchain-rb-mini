@@ -12,31 +12,29 @@ class ChatbotApp
   end
 
   def run(question)
-    prompt = "Question: #{question}\nThought:"
+    prompt = "Question: #{question}"
     final_answer = nil
 
-    logger.info("Main Prompt: #{prompt}")
+    logger.info(prompt.cyan)
 
     loop do
       response = generate_response(prompt)
 
-      logger.info("Generated Response: #{response}")
+      logger.info(response.yellow)
 
       if final_answer?(response)
         final_answer = parse_final_answer(response)
-        logger.info("Final Answer: #{final_answer}".cyan)
         break
       end
 
       action, action_input = parse_action(response)
 
-      logger.info("Action: #{action}")
-      logger.info("Action Input: #{action_input}")
-
+      logger.debug("performing action: #{action} with input: #{action_input}".magenta)
       observation = perform_action(action, action_input)
 
-      prompt += "\nThought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
-      logger.info("Observation: #{observation}")
+      logger.info("Observation: #{observation}".blue)
+
+      prompt = "Thought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
     end
 
     final_answer
@@ -88,3 +86,4 @@ class ChatbotApp
     end
   end
 end
+

@@ -27,6 +27,10 @@ class ChatbotLogger
     @logger.warn(msg)
   end
 
+  def debug(msg)
+    @logger.debug(msg)
+  end
+
   def error(msg)
     @logger.error(msg)
   end
