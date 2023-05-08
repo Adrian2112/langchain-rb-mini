@@ -3,7 +3,7 @@ require 'rspec/mocks'
 require_relative '../chatbot_app'
 
 RSpec.describe ChatbotApp do
-  let(:search) { double('SearchTool') }
+  let(:search) { double('SearchTool', name: 'search') }
   let(:language_model) { double('LocalLanguageModel') }
 
   subject(:chatbot) { ChatbotApp.new([search], language_model) }
@@ -63,14 +63,31 @@ RSpec.describe ChatbotApp do
     end
   end
 
-  describe '#parse_action' do
+  describe '#get_action' do
     let(:response) { "Thought: I'm not sure. Let me search for it.\nAction: search\nAction Input: capital of France" }
 
     it 'parses the action and action input from the response' do
-      action, action_input = chatbot.parse_action(response)
+      action = chatbot.get_action(response)
 
       expect(action).to eq('search')
+    end
+  end
+
+  describe '#get_action_input' do
+    let(:response) { "Thought: I'm not sure. Let me search for it.\nAction: search\nAction Input: capital of France" }
+
+    it 'parses the action and action input from the response' do
+      action_input = chatbot.get_action_input(response)
+
       expect(action_input).to eq('capital of France')
+    end
+
+    it 'with action and input in one line' do
+      response = 'Answer: Paris. Thought: Use the search tool to find an answer to the question "What is the capital of France?" Action Input: "What is the capital of France?"'
+
+      action_input = chatbot.get_action_input(response)
+
+      expect(action_input).to eq('"What is the capital of France?"')
     end
   end
 

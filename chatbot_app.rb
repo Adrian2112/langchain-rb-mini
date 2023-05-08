@@ -31,9 +31,13 @@ class ChatbotApp
         break
       end
 
-      action, action_input = parse_action(response)
+      thought = get_thought(response)
+
+      action = get_action(response)
+      action_input = get_action_input(response)
 
       unless action && action_input
+        logger.debug("no action found".magenta)
         run_count += 1
         next
       end
@@ -64,21 +68,24 @@ class ChatbotApp
     language_model.generate_response(prompt)
   end
 
-  def parse_action(response)
-    lines = response.split("\n")
-    action = nil
-    action_input = nil
+  def get_thought(response)
+    # anything before Action:
+    response.gsub("\n", '').match(/(.*)Action:/)&.[](1)
+  end
 
-    lines.each do |line|
-      line.strip!
-      if line.start_with?('Action:')
-        action = line.gsub('Action:', '').strip
-      elsif line.start_with?('Action Input:')
-        action_input = line.gsub('Action Input:', '').strip
-      end
-    end
+  def get_action(response)
+    response.
+      match(/Action:( ?.+|\n.*)/)&.
+      [](1)&.
+      strip&.
+      downcase&.
+      then { |action| tools.map(&:name).find { |tool_name| tool_name == action } }
+  end
 
-    [action, action_input]
+  def get_action_input(response)
+    response.
+      match(/(Action )?Input: (.*)/)&.
+      [](2)
   end
 
   def perform_action(action, action_input)
