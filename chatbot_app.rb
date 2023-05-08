@@ -50,7 +50,7 @@ class ChatbotApp
 
       logger.info("Observation: #{observation}".blue)
 
-      prompt += "\nThought: #{thought}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
+      prompt += "\nThought: #{thought}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}\nThought:"
 
       run_count += 1
     end
