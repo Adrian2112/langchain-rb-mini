@@ -26,13 +26,13 @@ unless options[:model_path]
   exit 1
 end
 
-# Load the language model
-language_model = LocalLanguageModel.new(options[:model_path], stop_token: 'Observation:')
-
 # Create tools
 tools = [
-  Search.new('search', ENV['SEARCH_API_KEY'])
+  Search.new('search', ENV.fetch('SEARCH_API_KEY'))
 ]
+
+# Load the language model
+language_model = LocalLanguageModel.new(options[:model_path], stop_token: 'Observation:')
 
 # Create the chatbot app
 chatbot = ChatbotApp.new(tools, language_model)
