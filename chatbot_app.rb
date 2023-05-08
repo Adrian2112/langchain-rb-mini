@@ -5,6 +5,8 @@ require 'pry'
 class ChatbotApp
   attr_reader :tools, :language_model, :logger
 
+  DEFAULT_MAX_RUNS = 10
+
   def initialize(tools, language_model)
     @tools = tools
     @language_model = language_model
@@ -12,13 +14,14 @@ class ChatbotApp
     @base_prompt = File.open("base_prompt.txt").read
   end
 
-  def run(question)
+  def run(question, max_runs: DEFAULT_MAX_RUNS)
     prompt = "#{@base_prompt}\nQuestion: #{question}"
     final_answer = nil
 
     logger.info(prompt.cyan)
 
-    loop do
+    run_count = 0
+    while run_count < max_runs
       response = generate_response(prompt)
 
       logger.info(response.yellow)
@@ -30,12 +33,19 @@ class ChatbotApp
 
       action, action_input = parse_action(response)
 
+      unless action && action_input
+        run_count += 1
+        next
+      end
+
       logger.debug("performing action: #{action} with input: #{action_input}".magenta)
       observation = perform_action(action, action_input)
 
       logger.info("Observation: #{observation}".blue)
 
       prompt = "Thought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
+
+      run_count += 1
     end
 
     final_answer

@@ -4,9 +4,9 @@ require_relative '../chatbot_app'
 
 RSpec.describe ChatbotApp do
   let(:search) { double('SearchTool') }
-  let(:local_language_model) { double('LocalLanguageModel') }
+  let(:language_model) { double('LocalLanguageModel') }
 
-  subject(:chatbot) { ChatbotApp.new([search], local_language_model) }
+  subject(:chatbot) { ChatbotApp.new([search], language_model) }
 
   before do
     allow(search).to receive(:name).and_return('search')
@@ -19,11 +19,23 @@ RSpec.describe ChatbotApp do
     let(:response2) { "Thought: Now I know the final answer.\nFinal Answer: Paris is the capital of France." }
 
     it 'runs the main loop and finds the final answer' do
-      expect(local_language_model).to receive(:generate_response).and_return(response1, response2)
+      expect(language_model).to receive(:generate_response).and_return(response1, response2)
       expect(search).to receive(:execute).with('capital of France').and_return(observation1)
 
       final_answer = chatbot.run(question)
       expect(final_answer).to eq("Paris is the capital of France.")
+    end
+
+    context 'when the action is invalid' do
+      let(:question) { 'What is the capital of France?' }
+      let(:response) { "Thought: I don't know what to do\nAction: invalid_action" }
+
+      it 'skips the run and tries again' do
+        expect(language_model).to receive(:generate_response).and_return(response)
+
+        final_answer = chatbot.run(question, max_runs: 1)
+        expect(final_answer).to be_nil
+      end
     end
   end
 
