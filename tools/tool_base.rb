@@ -1,4 +1,4 @@
-class Tool
+class ToolBase
   attr_reader :name
 
   def initialize(name)

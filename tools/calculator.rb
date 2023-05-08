@@ -1,6 +1,6 @@
-require_relative '../tool'
+require_relative '../tool_base'
 
-class CalculatorTool < Tool
+class Calculator < ToolBase
   def execute(input)
     # Code to evaluate the mathematical expression
     # Return the result
