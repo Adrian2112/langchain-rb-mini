@@ -1,4 +1,5 @@
 require_relative './chatbot_logger'
+require 'colorize'
 require 'pry'
 
 class ChatbotApp
@@ -12,14 +13,23 @@ class ChatbotApp
 
   def run(question)
     prompt = "Question: #{question}\nThought:"
+    final_answer = nil
 
     logger.info("Main Prompt: #{prompt}")
 
     loop do
       response = generate_response(prompt)
-      action, action_input = parse_action(response)
 
       logger.info("Generated Response: #{response}")
+
+      if final_answer?(response)
+        final_answer = parse_final_answer(response)
+        logger.info("Final Answer: #{final_answer}".cyan)
+        break
+      end
+
+      action, action_input = parse_action(response)
+
       logger.info("Action: #{action}")
       logger.info("Action Input: #{action_input}")
 
@@ -27,12 +37,18 @@ class ChatbotApp
 
       prompt += "\nThought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
       logger.info("Observation: #{observation}")
-
-      if observation.start_with?("Final Answer:")
-        logger.info("Final Answer: #{observation}".cyan)
-        break
-      end
     end
+
+    final_answer
+  end
+
+  def final_answer?(response)
+    response.include?("Final Answer:")
+  end
+
+  def parse_final_answer(response)
+    final_answer_line = response.lines.find { |line| line.include?("Final Answer:") }
+    final_answer_line ? final_answer_line.split("Final Answer:").last.to_s.strip : ""
   end
 
   def generate_response(prompt)
@@ -40,8 +56,20 @@ class ChatbotApp
   end
 
   def parse_action(response)
-    # Parse the response to extract the action and action input
-    # Return action, action_input
+    lines = response.split("\n")
+    action = nil
+    action_input = nil
+
+    lines.each do |line|
+      line.strip!
+      if line.start_with?('Action:')
+        action = line.gsub('Action:', '').strip
+      elsif line.start_with?('Action Input:')
+        action_input = line.gsub('Action Input:', '').strip
+      end
+    end
+
+    [action, action_input]
   end
 
   def perform_action(action, action_input)
