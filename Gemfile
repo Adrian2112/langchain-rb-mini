@@ -8,5 +8,6 @@ gem 'pry-byebug'
 gem 'rspec'
 gem 'guard'
 gem 'guard-rspec'
+gem 'webmock'
 # Add any additional gems you need for your project
 # gem 'example-gem'

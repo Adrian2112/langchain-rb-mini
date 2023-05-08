@@ -1,3 +1,5 @@
+require 'webmock/rspec'
+
 RSpec.configure do |config|
   # Run only the examples with :focus metadata
   config.filter_run focus: true
