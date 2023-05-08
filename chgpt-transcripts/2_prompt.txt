@@ -1,0 +1,177 @@
+I want to write a chatgpt like app where you can ask things and it will run a local LLM (large language model) and try to answer the question using varios tools.
+Search, Calculator etc.
+
+The LLM will take a base prompt like this
+"Answer the following questions as best you can. You have access to the following tools:
+
+search: a search engine. useful for when you need to answer questions about current
+        events. input should be a search query.
+calculator: useful for getting the result of a math expression. The input to this
+            tool should be a valid mathematical expression that could be executed
+            by a simple calculator.
+
+Use the following format:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [search, calculator]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!
+
+Question: ${question}
+Thought:
+"
+
+this is the current implementation of the ChatbotApp
+```
+require_relative './chatbot_logger'
+require 'pry'
+
+class ChatbotApp
+  attr_reader :tools, :language_model, :logger
+
+  def initialize(tools, language_model)
+    @tools = tools
+    @language_model = language_model
+    @logger = ChatbotLogger.new
+  end
+
+  def run(question)
+    prompt = "Question: #{question}\nThought:"
+
+    logger.info("Main Prompt: #{prompt}")
+
+    loop do
+      response = generate_response(prompt)
+      action, action_input = parse_action(response)
+
+      logger.info("Generated Response: #{response}")
+      logger.info("Action: #{action}")
+      logger.info("Action Input: #{action_input}")
+
+      observation = perform_action(action, action_input)
+
+      prompt += "\nThought: #{response}\nAction: #{action}\nAction Input: #{action_input}\nObservation: #{observation}"
+      logger.info("Observation: #{observation}")
+
+      if observation.start_with?("Final Answer:")
+        logger.info("Final Answer: #{observation}".cyan)
+        break
+      end
+    end
+  end
+
+  def generate_response(prompt)
+    language_model.generate_response(prompt)
+  end
+
+  def parse_action(response)
+    lines = response.split("\n")
+    action = nil
+    action_input = nil
+
+    lines.each do |line|
+      line.strip!
+      if line.start_with?('Action:')
+        action = line.gsub('Action:', '').strip
+      elsif line.start_with?('Action Input:')
+        action_input = line.gsub('Action Input:', '').strip
+      end
+    end
+
+    [action, action_input]
+  end
+
+  def perform_action(action, action_input)
+    tool = tools.find { |t| t.name == action }
+    if tool
+      result = tool.execute(action_input)
+      if result
+        result
+      else
+        logger.error("Failed to execute action: #{action}")
+        nil
+      end
+    else
+      logger.error("Invalid action: #{action}")
+      nil
+    end
+  end
+end
+```
+
+this is the current spec
+```
+require 'rspec'
+require 'rspec/mocks'
+require_relative '../chatbot_app'
+
+RSpec.describe ChatbotApp do
+  let(:search_tool) { double('SearchTool') }
+  let(:calculator_tool) { double('CalculatorTool') }
+  let(:local_language_model) { double('LocalLanguageModel') }
+
+  subject(:chatbot) { ChatbotApp.new([search_tool, calculator_tool], local_language_model) }
+
+  before do
+    allow(search_tool).to receive(:name).and_return('search')
+    allow(calculator_tool).to receive(:name).and_return('calculator')
+  end
+
+  describe '#run' do
+    let(:question) { 'What is the capital of France?' }
+    let(:response1) { "Thought: I'm not sure. Let me search for it.\nAction: search\nAction Input: capital of France" }
+    let(:observation1) { 'Paris is the capital of France.' }
+    let(:response2) { "Thought: Now I know the final answer.\nFinal Answer: Paris is the capital of France." }
+
+    it 'runs the main loop and finds the final answer' do
+      expect(local_language_model).to receive(:generate_response).and_return(response1, response2)
+      expect(search_tool).to receive(:execute).with('capital of France').and_return(observation1)
+
+      expect { chatbot.run(question) }.to output(/Final Answer: Paris is the capital of France./).to_stdout
+    end
+  end
+end
+```
+
+these are the logs and the spec error
+```
+INFO: Main Prompt: Question: What is the capital of France?
+Thought:
+INFO: Generated Response: Thought: I'm not sure. Let me search for it.
+Action: search
+Action Input: capital of France
+INFO: Action: search
+INFO: Action Input: capital of France
+INFO: Observation: Paris is the capital of France.
+INFO: Generated Response: Thought: Now I know the final answer.
+Final Answer: Paris is the capital of France.
+INFO: Action:
+INFO: Action Input:
+ERROR: Invalid action:
+INFO: Observation:
+F
+
+Failures:
+
+  1) ChatbotApp#run runs the main loop and finds the final answer
+     Failure/Error: expect { chatbot.run(question) }.to output(/Final Answer: Paris is the capital of France./).to_stdout
+
+     NoMethodError:
+       undefined method `start_with?' for nil:NilClass
+     # ./chatbot_app.rb:31:in `block in run'
+     # ./chatbot_app.rb:18:in `loop'
+     # ./chatbot_app.rb:18:in `run'
+     # ./spec/chatbot_app_spec.rb:27:in `block (4 levels) in <top (required)>'
+     # ./spec/chatbot_app_spec.rb:27:in `block (3 levels) in <top (required)>'
+
+Finished in 0.01597 seconds (files took 1.04 seconds to load)
+1 example, 1 failure
+```
+
+Fix this
